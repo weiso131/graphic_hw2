@@ -55,19 +55,22 @@ def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_bu
 frame = tk.Frame(root)
 frame.pack(pady=20)
 
-img1_label = tk.Label(frame, image=empty_img)
-img2_label = tk.Label(frame, image=empty_img)
+img1_canvas = tk.Canvas(frame, width=400, height=400)
+img2_canvas = tk.Canvas(frame, width=400, height=400)
+img1_id = img1_canvas.create_image(0, 0, anchor='nw', image=empty_img)
+img2_id = img2_canvas.create_image(0, 0, anchor='nw', image=empty_img)
+
 result_img_label = tk.Label(frame, image=empty_img)
 
-img1_label.grid(row=0, column=0, padx=10)
-img2_label.grid(row=0, column=1, padx=10)
+img1_canvas.grid(row=0, column=0, padx=10)
+img2_canvas.grid(row=0, column=1, padx=10)
 result_img_label.grid(row=0, column=2, padx=10)
 
 
-img1_btn = tk.Button(root, text="選擇檔案", command=btn_choice_img(img1_label, img_buf, IMG1_BUF))
+img1_btn = tk.Button(root, text="選擇檔案", command=btn_choice_img(img1_canvas, img_buf, IMG1_BUF, img1_id))
 img1_btn.pack(pady=20)
 
-img2_btn = tk.Button(root, text="選擇檔案", command=btn_choice_img(img2_label, img_buf, IMG2_BUF))
+img2_btn = tk.Button(root, text="選擇檔案", command=btn_choice_img(img2_canvas, img_buf, IMG2_BUF, img2_id))
 img2_btn.pack(pady=20)
 
 img2_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, result_img_label, 0.5)())
@@ -106,7 +109,7 @@ button = tk.Button(root, text="Get Mouse Position", command=show_mouse_position)
 button.pack(padx=20, pady=20)
 
 
-root.bind("<Button-1>", func=lambda event: on_click_func(img1_label, img2_label)(event))
+root.bind("<Button-1>", func=lambda event: on_click_func(img1_canvas, img2_canvas)(event))
 
 root.mainloop()
 
