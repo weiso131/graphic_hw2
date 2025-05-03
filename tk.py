@@ -1,37 +1,28 @@
 import tkinter as tk
-from tkinter import filedialog
 from PIL import Image, ImageTk
 import numpy as np
 import threading
 import time
 
 from morphing import *
+from choice_img import *
 
-def set_img_label(img_label: tk.Label, img_array: np.ndarray):
-    img_array = np.clip(img_array, 0, 255).astype(np.uint8)
-    pil_img = Image.fromarray(img_array)
-    tk_img = ImageTk.PhotoImage(pil_img)
+root = tk.Tk()
+root.title("morphing")
+root.geometry("1920x1080")
 
-    img_label.config(image=tk_img)
-    img_label.image = tk_img
+empty_img_array = np.zeros((400, 400, 3), dtype=np.uint8)
+empty_img_array[:, :] = [230, 230, 230]
+pil_img = Image.fromarray(empty_img_array)
+empty_img = ImageTk.PhotoImage(pil_img)
 
-def read_img(img_path: str) -> np.ndarray:
-    img =  Image.open(img_path).resize((400, 400))
-    return np.array(img)
+IMG1_BUF = 0
+IMG2_BUF = 1
+RESULT_BUF = 2
 
-def choose_file():
-    filepath = filedialog.askopenfilename(
-        title="選擇一個檔案",
-        filetypes=[("圖片檔案", "*.png *.jpg *.jpeg *.bmp"), ("所有檔案", "*.*")]
-    )
-    return str(filepath)
+img_buf = [None, None, None] #save the img np array
 
-def btn_choice_img(img_label: tk.Label, img_array_buf: np.ndarray, buf_idx: int):
-    def btn_func():
-        filepath = choose_file()
-        img_array_buf[buf_idx] = read_img(filepath)
-        set_img_label(img_label, img_array_buf[buf_idx])
-    return btn_func
+access_mouse = False #if True, on_click will get the mouse position
 
 def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_buf: np.ndarray, buf_idx: int, \
                     result_label: np.ndarray, alpha: int):
@@ -61,24 +52,8 @@ def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_bu
         threading.Thread(target=morphing_calculate).start()
     return morphing_func
 
-root = tk.Tk()
-root.title("多張圖片展示")
-root.geometry("1920x1080")
-
-empty_img_array = np.zeros((400, 400, 3), dtype=np.uint8)
-empty_img_array[:, :] = [230, 230, 230]
-pil_img = Image.fromarray(empty_img_array)
-empty_img = ImageTk.PhotoImage(pil_img)
-
-
 frame = tk.Frame(root)
 frame.pack(pady=20)
-
-img_buf = [None, None, None]
-
-IMG1_BUF = 0
-IMG2_BUF = 1
-RESULT_BUF = 2
 
 img1_label = tk.Label(frame, image=empty_img)
 img2_label = tk.Label(frame, image=empty_img)
