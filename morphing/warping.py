@@ -47,11 +47,13 @@ def get_alpha(dest: np.ndarray, src: np.ndarray, alpha: float):
 
 class LinePair():
     def __init__(self, src_start: np.ndarray, src_end: np.ndarray, \
-                 dest_start: np.ndarray, dest_end: np.ndarray):
+                 dest_start: np.ndarray, dest_end: np.ndarray, line1_id=None, line2_id=None):
         self.src_start = src_start
         self.src_end = src_end
         self.dest_start = dest_start
         self.dest_end = dest_end
+        self.line1_id = line1_id
+        self.line2_id = line2_id
     def warping(self, target_dest: np.ndarray, alpha=1.0) -> np.ndarray:
         dest_start_alpha = get_alpha(self.dest_start, self.src_start, alpha)
         dest_end_alpha = get_alpha(self.dest_end, self.src_end, alpha)
@@ -72,6 +74,8 @@ class LinePair():
         return (((length ** p) / (a + dist)) ** b)
     def reverse(self):
         return LinePair(self.dest_start, self.dest_end, self.src_start, self.src_end)
+    def __str__(self):
+        return (f"src_start: {self.src_start}, src_end: {self.src_end}, dest_start: {self.dest_start}, dest_end: {self.dest_end}\n")
 
 def bounding(l: int, r: int, value: float):
     return min(r, max(l, int(value)))

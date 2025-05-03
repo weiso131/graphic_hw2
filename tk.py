@@ -22,22 +22,18 @@ RESULT_BUF = 2
 
 img_buf = [None, None, None] #save the img np array
 
+lp_array = []
+
 def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_buf: np.ndarray, buf_idx: int, \
-                    result_label: np.ndarray, alpha: int):
+                    result_label: np.ndarray, alpha: int):    
     def least_than_two_img():
         print("meow")
     if (img1_array is None) or (img2_array is None):
         return least_than_two_img
 
     def morphing_calculate():
-        lp_array = [LinePair(np.array([20, 10]), np.array([25, 80]), \
-        np.array([45, 60]), np.array([45, 95])), 
-        LinePair(np.array([25, 175]), np.array([20, 245]), \
-        np.array([45, 140]), np.array([45, 170])), 
-        LinePair(np.array([50, 127]), np.array([120, 127]), \
-        np.array([50, 116]), np.array([110, 116])),
-        LinePair(np.array([180, 100]), np.array([180, 160]), \
-        np.array([130, 90]), np.array([130, 140])),]
+        for lp in lp_array:
+            print(lp)
 
         start = time.time()
         print("start morphing")
@@ -79,22 +75,24 @@ start_x = start_y = 0
 current_line = None
 canvas_id = 0    #user need to draw on img1 then img2
 line_pair = []
-line_pair_list = []
+
 
 def mouse_down_func(canvas, img_id):
     def on_mouse_down(event):
-        global start_x, start_y, current_line, canvas_id, line_pair
+        global start_x, start_y, current_line, canvas_id, line_pair, lp_array
         
         if canvas_id == img_id and current_line == None:
             start_x, start_y = event.x, event.y
             current_line = canvas.create_line(start_x, start_y, start_x, start_y, fill="blue", width=2)
         elif canvas_id == img_id:
             canvas.coords(current_line, start_x, start_y, event.x, event.y)
-            line_pair.append((current_line, start_x, start_y, event.x, event.y))
+            line_pair.append((current_line, np.array([start_y, start_x]), np.array([event.y, event.x])))
             current_line = None
             canvas_id = (canvas_id + 1) % 3
             if canvas_id == 0:
-                line_pair_list.append(line_pair)
+                lp_array.append(LinePair(line_pair[0][1], line_pair[0][2], 
+                                         line_pair[1][1], line_pair[1][2], 
+                                         line_pair[0][0], line_pair[1][0]))
                 line_pair = []
 
     return on_mouse_down
