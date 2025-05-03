@@ -24,6 +24,7 @@ img_buf = [None, None, None] #save the img np array
 
 lp_array = []
 
+alpha = 0.5
 def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_buf: np.ndarray, buf_idx: int, \
                     result_label: np.ndarray, alpha: int):    
     def least_than_two_img():
@@ -32,9 +33,16 @@ def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_bu
         return least_than_two_img
 
     def morphing_calculate():
+        global alpha
+        try:
+            value = float(alpha_entry.get())
+            value = max(0.0, min(1.0, value))
+            alpha = value
+        except ValueError:
+            alpha = 0.5
+            print("請輸入合法數字")
         for lp in lp_array:
             print(lp)
-
         start = time.time()
         print("start morphing")
         _, _, result_buf[buf_idx] = morphing(lp_array, img1_array, img2_array, alpha)
@@ -43,6 +51,7 @@ def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_bu
         root.after(0, lambda: set_img_label(result_label, result_buf[buf_idx]))
 
     def morphing_func():
+        
         threading.Thread(target=morphing_calculate).start()
     return morphing_func
 
@@ -67,7 +76,7 @@ img1_btn.pack(pady=20)
 img2_btn = tk.Button(root, text="選擇檔案", command=btn_choice_img(img2_canvas, img_buf, IMG2_BUF, img2_id))
 img2_btn.pack(pady=20)
 
-img2_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, result_img_label, 0.5)())
+img2_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, result_img_label, alpha)())
 img2_btn.pack(pady=20)
 
 
@@ -129,5 +138,12 @@ def start_draw():
 button = tk.Button(root, text="draw", command=start_draw)
 button.pack(padx=20, pady=20)
 
+alpha_container = tk.Frame(root)
+alpha_label = tk.Label(alpha_container, text="alpha: ")
+alpha_entry = tk.Entry(alpha_container, textvariable=tk.StringVar(value=alpha), width=6)
+
+alpha_label.pack(side="left")
+alpha_entry.pack(side="left")
+alpha_container.pack(pady=5)
 
 root.mainloop()
