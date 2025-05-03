@@ -22,8 +22,6 @@ RESULT_BUF = 2
 
 img_buf = [None, None, None] #save the img np array
 
-access_mouse = False #if True, on_click will get the mouse position
-
 def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_buf: np.ndarray, buf_idx: int, \
                     result_label: np.ndarray, alpha: int):
     def least_than_two_img():
@@ -76,40 +74,62 @@ img2_btn.pack(pady=20)
 img2_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, result_img_label, 0.5)())
 img2_btn.pack(pady=20)
 
-def check_inside(img: tuple, x: int, y: int) -> bool:
-    rootx, rooty, endx, endy = img
-    return x > rootx and x < endx and y > rooty and y < endy
 
-def on_click_func(img1: tk.Label, img2: tk.Label):
-    img_list = [(img1.winfo_rootx(), img1.winfo_rooty(), 
-                 img1.winfo_rootx() + img1.winfo_width(), 
-                 img1.winfo_rooty() + img1.winfo_height()),
-                (img2.winfo_rootx(), img2.winfo_rooty(), 
-                 img2.winfo_rootx() + img2.winfo_width(), 
-                 img2.winfo_rooty() + img2.winfo_height())]
+start_x = start_y = 0
+current_line = None
+canvas_id = 0    #user need to draw on img1 then img2
+line_pair = []
+line_pair_list = []
 
-    def on_click(_):
-        global access_mouse
-        if access_mouse:
-            x = root.winfo_pointerx()
-            y = root.winfo_pointery()
+def mouse_down_func(canvas, img_id):
+    def on_mouse_down(event):
+        global start_x, start_y, current_line, canvas_id, line_pair
+        
+        if canvas_id == img_id and current_line == None:
+            start_x, start_y = event.x, event.y
+            current_line = canvas.create_line(start_x, start_y, start_x, start_y, fill="blue", width=2)
+        elif canvas_id == img_id:
+            canvas.coords(current_line, start_x, start_y, event.x, event.y)
+            line_pair.append((current_line, start_x, start_y, event.x, event.y))
+            current_line = None
+            canvas_id = (canvas_id + 1) % 3
+            if canvas_id == 0:
+                line_pair_list.append(line_pair)
+                line_pair = []
 
-            for i in range(len(img_list)):
-                if check_inside(img_list[i], x, y):
-                    print(f"inside img{i + 1}")
-                    break
+    return on_mouse_down
 
-    return on_click
+def mouse_move_func(canvas, img_id):
+    def on_mouse_move(event):
+        global start_x, start_y, current_line
+        if current_line is not None and canvas_id == img_id:
+            canvas.coords(current_line, start_x, start_y, event.x, event.y)
 
-def show_mouse_position():
-    global access_mouse
-    access_mouse ^= True
+    return on_mouse_move
 
-button = tk.Button(root, text="Get Mouse Position", command=show_mouse_position)
+img1_canvas.bind("<Button-1>", mouse_down_func(img1_canvas, 1))
+img1_canvas.bind("<Motion>", mouse_move_func(img1_canvas, 1))
+img2_canvas.bind("<Button-1>", mouse_down_func(img2_canvas, 2))
+img2_canvas.bind("<Motion>", mouse_move_func(img2_canvas, 2))
+def start_draw():
+    global current_line, canvas_id, line_pair
+    canvas_id = canvas_id == 0
+    
+    #if user click draw button before draw complete, then release uncomplete part
+    if len(line_pair) != 0:       
+        img1_canvas.delete(line_pair[0][0])
+        if len(line_pair) == 2:
+            img2_canvas.delete(line_pair[1][0])
+        elif current_line != None:
+            img2_canvas.delete(current_line)
+    elif current_line != None:
+        img1_canvas.delete(current_line)
+
+    current_line = None
+    line_pair = []
+
+button = tk.Button(root, text="draw", command=start_draw)
 button.pack(padx=20, pady=20)
 
 
-root.bind("<Button-1>", func=lambda event: on_click_func(img1_canvas, img2_canvas)(event))
-
 root.mainloop()
-
