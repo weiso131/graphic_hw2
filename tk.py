@@ -73,5 +73,40 @@ img2_btn.pack(pady=20)
 img2_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, result_img_label, 0.5)())
 img2_btn.pack(pady=20)
 
+def check_inside(img: tuple, x: int, y: int) -> bool:
+    rootx, rooty, endx, endy = img
+    return x > rootx and x < endx and y > rooty and y < endy
+
+def on_click_func(img1: tk.Label, img2: tk.Label):
+    img_list = [(img1.winfo_rootx(), img1.winfo_rooty(), 
+                 img1.winfo_rootx() + img1.winfo_width(), 
+                 img1.winfo_rooty() + img1.winfo_height()),
+                (img2.winfo_rootx(), img2.winfo_rooty(), 
+                 img2.winfo_rootx() + img2.winfo_width(), 
+                 img2.winfo_rooty() + img2.winfo_height())]
+
+    def on_click(_):
+        global access_mouse
+        if access_mouse:
+            x = root.winfo_pointerx()
+            y = root.winfo_pointery()
+
+            for i in range(len(img_list)):
+                if check_inside(img_list[i], x, y):
+                    print(f"inside img{i + 1}")
+                    break
+
+    return on_click
+
+def show_mouse_position():
+    global access_mouse
+    access_mouse ^= True
+
+button = tk.Button(root, text="Get Mouse Position", command=show_mouse_position)
+button.pack(padx=20, pady=20)
+
+
+root.bind("<Button-1>", func=lambda event: on_click_func(img1_label, img2_label)(event))
+
 root.mainloop()
 
