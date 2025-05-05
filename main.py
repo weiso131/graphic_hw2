@@ -162,7 +162,7 @@ def start_draw():
     current_line = None
     line_pair = []
 
-def redo_draw():
+def undo_draw():
     global lp_array
     if len(lp_array) == 0:
         return
@@ -174,8 +174,8 @@ def redo_draw():
 draw_btn = tk.Button(root, text="draw", command=start_draw)
 draw_btn.pack(padx=20, pady=20)
 
-redo_btn = tk.Button(root, text="redo", command=redo_draw)
-redo_btn.pack(padx=20, pady=20)
+undo_btn = tk.Button(root, text="undo", command=undo_draw)
+undo_btn.pack(padx=20, pady=20)
 
 alpha_container = tk.Frame(root)
 alpha_label = tk.Label(alpha_container, text="alpha: ")
