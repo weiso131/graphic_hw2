@@ -6,6 +6,7 @@ import time
 
 from morphing import *
 from choice_img import *
+from morphing_anime import get_morphing_anime, play_anime
 
 root = tk.Tk()
 root.title("morphing")
@@ -26,7 +27,7 @@ lp_array = []
 
 alpha = 0.5
 def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_buf: np.ndarray, buf_idx: int, \
-                    result_label: np.ndarray, alpha: int):    
+                    result_label: tk.Label):    
     def least_than_two_img():
         print("meow")
     if (img1_array is None) or (img2_array is None):
@@ -41,8 +42,6 @@ def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_bu
         except ValueError:
             alpha = 0.5
             print("請輸入合法數字")
-        for lp in lp_array:
-            print(lp)
         start = time.time()
         print("start morphing")
         _, _, result_buf[buf_idx] = morphing(lp_array, img1_array, img2_array, alpha)
@@ -54,6 +53,7 @@ def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_bu
         
         threading.Thread(target=morphing_calculate).start()
     return morphing_func
+
 
 frame = tk.Frame(root)
 frame.pack(pady=20)
@@ -76,9 +76,15 @@ img1_btn.pack(pady=20)
 img2_btn = tk.Button(root, text="選擇檔案", command=btn_choice_img(img2_canvas, img_buf, IMG2_BUF, img2_id))
 img2_btn.pack(pady=20)
 
-img2_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, result_img_label, alpha)())
-img2_btn.pack(pady=20)
+morphing_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, result_img_label)())
+morphing_btn.pack(pady=20)
 
+morphing_video_btn = tk.Button(root, text="morphing video", command=lambda: get_morphing_anime(img_buf[IMG1_BUF], 
+                                                                                         img_buf[IMG2_BUF], 
+                                                                                         lp_array)())
+morphing_video_btn.pack(pady=20)
+
+play_anime(root, result_img_label)
 
 start_x = start_y = 0
 current_line = None
