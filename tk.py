@@ -162,8 +162,20 @@ def start_draw():
     current_line = None
     line_pair = []
 
-button = tk.Button(root, text="draw", command=start_draw)
-button.pack(padx=20, pady=20)
+def redo_draw():
+    global lp_array
+    if len(lp_array) == 0:
+        return
+    line = lp_array.pop()
+    img1_canvas.delete(line.line1_id)
+    img2_canvas.delete(line.line2_id)
+
+
+draw_btn = tk.Button(root, text="draw", command=start_draw)
+draw_btn.pack(padx=20, pady=20)
+
+redo_btn = tk.Button(root, text="redo", command=redo_draw)
+redo_btn.pack(padx=20, pady=20)
 
 alpha_container = tk.Frame(root)
 alpha_label = tk.Label(alpha_container, text="alpha: ")
