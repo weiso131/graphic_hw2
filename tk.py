@@ -20,14 +20,16 @@ empty_img = ImageTk.PhotoImage(pil_img)
 IMG1_BUF = 0
 IMG2_BUF = 1
 RESULT_BUF = 2
+IMG1_WARPING = 3
+IMG2_WARPING = 4
 
-img_buf = [None, None, None] #save the img np array
+img_buf = [None, None, None, None, None] #save the img np array
 
 lp_array = []
 
 alpha = 0.5
-def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_buf: np.ndarray, buf_idx: int, \
-                    result_label: tk.Label):    
+def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_buf: np.ndarray, 
+                 result_idx: int, warping1_idx: int, warping2_idx: int, result_label: tk.Label):    
     def least_than_two_img():
         print("meow")
     if (img1_array is None) or (img2_array is None):
@@ -44,16 +46,20 @@ def get_morphing(root, img1_array: np.ndarray, img2_array: np.ndarray, result_bu
             print("請輸入合法數字")
         start = time.time()
         print("start morphing")
-        _, _, result_buf[buf_idx] = morphing(lp_array, img1_array, img2_array, alpha)
+        result_buf[warping1_idx], result_buf[warping2_idx], result_buf[result_idx] = morphing(lp_array, img1_array, img2_array, alpha)
         print(f"end morphing, time: {time.time() - start}")
 
-        root.after(0, lambda: set_img_label(result_label, result_buf[buf_idx]))
+        root.after(0, lambda: set_img_label(result_label, result_buf[result_idx]))
 
     def morphing_func():
         
         threading.Thread(target=morphing_calculate).start()
     return morphing_func
-
+def switch_show_img(result_label: tk.Label, result_buf: np.ndarray, buf_idx: int):
+    def switch_show_img_func():
+        if not (result_buf[buf_idx] is None):
+            set_img_label(result_label, result_buf[buf_idx])
+    return switch_show_img_func
 
 frame = tk.Frame(root)
 frame.pack(pady=20)
@@ -65,9 +71,12 @@ img2_id = img2_canvas.create_image(0, 0, anchor='nw', image=empty_img)
 
 result_img_label = tk.Label(frame, image=empty_img)
 
+switch_btn_frame = tk.Frame(frame)
+
 img1_canvas.grid(row=0, column=0, padx=10)
 img2_canvas.grid(row=0, column=1, padx=10)
 result_img_label.grid(row=0, column=2, padx=10)
+switch_btn_frame.grid(row=0, column=3, sticky='n', padx=10, pady=10)
 
 
 img1_btn = tk.Button(root, text="選擇檔案", command=btn_choice_img(img1_canvas, img_buf, IMG1_BUF, img1_id))
@@ -76,7 +85,7 @@ img1_btn.pack(pady=20)
 img2_btn = tk.Button(root, text="選擇檔案", command=btn_choice_img(img2_canvas, img_buf, IMG2_BUF, img2_id))
 img2_btn.pack(pady=20)
 
-morphing_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, result_img_label)())
+morphing_btn = tk.Button(root, text="morphing", command=lambda: get_morphing(root, img_buf[IMG1_BUF], img_buf[IMG2_BUF], img_buf, RESULT_BUF, IMG1_WARPING, IMG2_WARPING, result_img_label)())
 morphing_btn.pack(pady=20)
 
 morphing_video_btn = tk.Button(root, text="morphing video", command=lambda: get_morphing_anime(img_buf[IMG1_BUF], 
@@ -85,6 +94,18 @@ morphing_video_btn = tk.Button(root, text="morphing video", command=lambda: get_
 morphing_video_btn.pack(pady=20)
 
 play_anime(root, result_img_label)
+
+btn1 = tk.Button(switch_btn_frame, text="show result",
+                 command=lambda: switch_show_img(result_img_label, img_buf, RESULT_BUF)())
+btn1.grid(row=0, column=0, pady=(0, 5))
+
+btn2 = tk.Button(switch_btn_frame, text="show warping1",
+                 command=lambda: switch_show_img(result_img_label, img_buf, IMG1_WARPING)())
+btn2.grid(row=1, column=0, pady=(0, 5))
+
+btn3 = tk.Button(switch_btn_frame, text="show warping2",
+                 command=lambda: switch_show_img(result_img_label, img_buf, IMG2_WARPING)())
+btn3.grid(row=2, column=0)
 
 start_x = start_y = 0
 current_line = None
