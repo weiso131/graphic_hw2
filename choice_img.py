@@ -3,7 +3,7 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 import numpy as np
 
-def set_img_label(img_label: tk.Canvas, img_array: np.ndarray):
+def set_img_label(img_label: tk.Label, img_array: np.ndarray):
     img_array = np.clip(img_array, 0, 255).astype(np.uint8)
     pil_img = Image.fromarray(img_array)
     tk_img = ImageTk.PhotoImage(pil_img)
